@@ -7,6 +7,14 @@ def dd(val):
     
 def sig(z):
     return 1 / (1 + np.exp(-z))
+
+def sig_prime(z):
+    a = sig(z)
+    return a * (1 - a)
+    
+def softmax(z):
+    total = np.sum(np.exp(z))
+    return [np.exp(zk) / total for zk in z]
     
 #training_data , validation_data , test_data = load_data_wrapper()
 training_data = data_loader.load_data_wrapper()
@@ -35,11 +43,38 @@ w = weights[0]
 #z = np.dot(w, a) - b
 #dd( [z,sig(z)] )
 
-
-for wk in w:
-    dd(wk)
-    
-for w, b in zip(biases, weights):
-    z = w * a - b
+zetas = []
+activations = [a]
+for b, w in zip(biases, weights):
+    z = np.dot(w, a) - b
+    zetas.append(z)
     a = sig(z)
+    activations.append(a)
 	
+a = softmax(z)
+
+y = training_data[1][0]
+
+err = a - y
+#dd(err.shape)
+
+#dd( sig_prime(z) )
+#dd( weights[-1].shape )
+#dd( np.transpose(weights[-1]).shape )
+#dd( np.dot(np.transpose(weights[-1]), err).shape )
+#dd( sig_prime(zetas[-1]).shape )
+ 
+errors = [err]
+for w, z in zip(reversed(weights), reversed(zetas[:-1])):
+    err = np.dot(np.transpose(w), err) * sig_prime(z)
+    errors.append(err)
+
+#errors.append(err)
+#error = reversed(errors)
+
+#dd([ errors[1].shape, np.transpose(activations[0]).shape ])
+#dd( np.dot(errors[1], np.transpose(activations[0])) )
+
+gradient_w = []   
+for a, err in zip(activations, errors):
+    gradient_w.append(np.dot( err,  np.transpose(a) ))
