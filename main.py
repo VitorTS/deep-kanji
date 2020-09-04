@@ -19,62 +19,97 @@ def softmax(z):
 #training_data , validation_data , test_data = load_data_wrapper()
 training_data = data_loader.load_data_wrapper()
 
-x = training_data[0] 
-
-layerSizes = [len(x[0]), 15, 10];
+inputSize = len(training_data[0][0])
+layerSizes = [inputSize, 15, 10];
+learningRate = 0.1
+batch_size = 30
 
 #feed the numbers in layerSizes as sizes for randn
 biases = [np.random.normal(0.0, 1.0, (row, 1)) for row in layerSizes[1:]]
 #dd(biases)
 
-fullLayer = [(len(x[0]), 15), (15, 10)]
+fullLayer = [(inputSize, 15), (15, 10)]
 weights = [np.random.normal(0.0, 1.0/np.sqrt(col), (row, col)) for col, row in fullLayer]
 #dd(weights[0][0]) #peek to see if the weights were set correctly
 
-a = x[0]
-#dd(a)
+inputs = training_data[0][:batch_size]
+validations = training_data[1][:batch_size]
 
-b = biases[0]
-w = weights[0]
 
-#dd( (a * w).shape )
-#dd( [w.shape, a.shape ] )
+#should a single list of tuples...
+for a, y in zip(inputs, validations):
 
-#z = np.dot(w, a) - b
-#dd( [z,sig(z)] )
+    #b = biases[0]
+    #w = weights[0]
 
-zetas = []
-activations = [a]
-for b, w in zip(biases, weights):
-    z = np.dot(w, a) - b
-    zetas.append(z)
-    a = sig(z)
-    activations.append(a)
-	
-a = softmax(z)
+    #dd( (a * w).shape )
+    #dd( [w.shape, a.shape ] )
 
-y = training_data[1][0]
+    #z = np.dot(w, a) - b
+    #dd( [z,sig(z)] )
 
-err = a - y
-#dd(err.shape)
 
-#dd( sig_prime(z) )
-#dd( weights[-1].shape )
-#dd( np.transpose(weights[-1]).shape )
-#dd( np.dot(np.transpose(weights[-1]), err).shape )
-#dd( sig_prime(zetas[-1]).shape )
- 
-errors = [err]
-for w, z in zip(reversed(weights), reversed(zetas[:-1])):
-    err = np.dot(np.transpose(w), err) * sig_prime(z)
-    errors.append(err)
+    zetas = []
+    activations = [a]
+    for b, w in zip(biases, weights):
+        z = np.dot(w, a) - b
+        zetas.append(z)
+        a = sig(z)
+        activations.append(a)
+        
+    a = softmax(z)
 
-#errors.append(err)
-#error = reversed(errors)
+    y = training_data[1][0]
 
-#dd([ errors[1].shape, np.transpose(activations[0]).shape ])
-#dd( np.dot(errors[1], np.transpose(activations[0])) )
+    err = a - y
+    #dd(err.shape)
 
-gradient_w = []   
-for a, err in zip(activations, errors):
-    gradient_w.append(np.dot( err,  np.transpose(a) ))
+    #dd( sig_prime(z) )
+    #dd( weights[-1].shape )
+    #dd( np.transpose(weights[-1]).shape )
+    #dd( np.dot(np.transpose(weights[-1]), err).shape )
+    #dd( sig_prime(zetas[-1]).shape )
+     
+    errors = [err]
+    for w, z in zip(reversed(weights), reversed(zetas[:-1])):
+        err = np.dot(np.transpose(w), err) * sig_prime(z)
+        errors.append(err)
+
+    errors.reverse()
+
+    """
+    for err in errors:
+        print(err.shape)
+        
+    print('---------')
+
+    for a in activations:
+        print(a.shape)
+
+    print('--------------------------')
+    """
+
+    #dd([ np.dot( errors[0], np.transpose(activations[0]) ).shape ])
+     
+    #dd([ errors[1].shape, np.transpose(activations[0]).shape ])
+    #dd( np.dot(errors[1], np.transpose(activations[0])) )
+    gradient_b = errors
+    gradient_w = []   
+    for a, err in zip(activations, errors):
+        gradient_w.append(np.dot( err,  np.transpose(a) ))
+       
+    """
+    for grad in gradient_w:
+        print(grad.shape)
+        
+    print('-------------')
+
+    for w in weights:
+        print(w.shape)
+    """
+
+    for l in range(0, len(layerSizes) - 1):
+        weights[l] = weights[l] - learningRate * gradient_w[l]
+
+    for w in weights:
+        print(w.shape)
