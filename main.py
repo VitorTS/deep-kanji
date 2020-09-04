@@ -17,7 +17,7 @@ def softmax(z):
     return [np.exp(zk) / total for zk in z]
     
 #training_data , validation_data , test_data = load_data_wrapper()
-training_data = data_loader.load_data_wrapper()
+training_data, test_data = data_loader.load_data_wrapper()
 
 inputSize = len(training_data[0][0])
 layerSizes = [inputSize, 15, 10];
@@ -35,10 +35,9 @@ weights = [np.random.normal(0.0, 1.0/np.sqrt(col), (row, col)) for col, row in f
 inputs = training_data[0][:batch_size]
 validations = training_data[1][:batch_size]
 
-
 #should a single list of tuples...
 for a, y in zip(inputs, validations):
-
+    
     #b = biases[0]
     #w = weights[0]
 
@@ -46,7 +45,7 @@ for a, y in zip(inputs, validations):
     #dd( [w.shape, a.shape ] )
 
     #z = np.dot(w, a) - b
-    #dd( [z,sig(z)] )
+    #dd*( [z,sig(z)] )
 
 
     zetas = []
@@ -58,9 +57,7 @@ for a, y in zip(inputs, validations):
         activations.append(a)
         
     a = softmax(z)
-
-    y = training_data[1][0]
-
+    
     err = a - y
     #dd(err.shape)
 
@@ -111,5 +108,24 @@ for a, y in zip(inputs, validations):
     for l in range(0, len(layerSizes) - 1):
         weights[l] = weights[l] - learningRate * gradient_w[l]
 
-    for w in weights:
-        print(w.shape)
+    #for w in weights:
+    #    print(w.shape)
+   
+
+   
+inputs = test_data[0][:batch_size]
+validations = test_data[1][:batch_size]
+correct = 0;
+
+for a, n in zip(inputs, validations):
+    for b, w in zip(biases, weights):
+        z = np.dot(w, a) - b
+        a = sig(z)
+        
+    a = softmax(z)
+    
+    if(a.index(max(a)) == n):
+        correct = correct + 1;
+
+accuracy = round(correct / len(validations), 2)
+print("accuracy: " + str(accuracy))
