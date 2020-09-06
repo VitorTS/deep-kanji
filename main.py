@@ -5,6 +5,11 @@ def dd(val):
     print(val)
     quit()
     
+def ds(someList):
+    for l in someList:
+        print(l.shape)
+    quit()
+    
 def sig(z):
     return 1 / (1 + np.exp(-z))
 
@@ -41,16 +46,7 @@ for i in range(epochs):
         gradient_b = [np.zeros((row, 1)) for row in layerSizes[1:]];
         
         for a, y in batches:
-            #b = biases[0]
-            #w = weights[0]
-
-            #dd( (a * w).shape )
-            #dd( [w.shape, a.shape ] )
-
-            #z = np.dot(w, a) - b
-            #dd*( [z,sig(z)] )
-
-
+            #feedforward
             zetas = []
             activations = [a]
             for b, w in zip(biases, weights):
@@ -58,68 +54,34 @@ for i in range(epochs):
                 zetas.append(z)
                 a = sig(z)
                 activations.append(a)
-                
-            a = softmax(z)
             
+            #output layer error and cost
+            a = softmax(z)
             err = a - y
-            #dd(err.shape)
-
-            #dd( sig_prime(z) )
-            #dd( weights[-1].shape )
-            #dd( np.transpose(weights[-1]).shape )
-            #dd( np.dot(np.transpose(weights[-1]), err).shape )
-            #dd( sig_prime(zetas[-1]).shape )
              
+            #backpropagation
             errors = [err]
             for w, z in zip(reversed(weights), reversed(zetas[:-1])):
                 err = np.dot(np.transpose(w), err) * sig_prime(z)
                 errors.append(err)
 
             errors.reverse()
-
-            """
-            for err in errors:
-                print(err.shape)
-                
-            print('---------')
-
-            for gb in gradient_b:
-                print(gb.shape)
-
-            print('--------------------------')
-            quit()
-            """
-
-            #dd([ np.dot( errors[0], np.transpose(activations[0]) ).shape ])
-             
-            #dd([ errors[1].shape, np.transpose(activations[0]).shape ])
-            #dd( np.dot(errors[1], np.transpose(activations[0])) )
+            
             gradient_b = [b + e for b, e in zip(gradient_b, errors)]
             
             j = 0
             for a, err in zip(activations, errors):
                 gradient_w[j] = gradient_w[j] + (np.dot( err,  np.transpose(a) ))
                 j = j + 1
-                
-            """
-            for grad in gradient_w:
-                print(grad.shape)
-                
-            print('-------------')
-
-            for w in weights:
-                print(w.shape)
-            """
         
+        #gradient descend
         avg = 1 / len(batches)
         for l in range(0, len(layerSizes) - 1):
             weights[l] = weights[l] - learningRate * gradient_w[l] * avg
 
         for l in range(0, len(layerSizes) - 1):
             biases[l] = biases[l] - learningRate * gradient_b[l] * avg
-        #for w in weights:
-        #    print(w.shape)
-
+            
 correct = 0;
 for a, n in test_data:
     for b, w in zip(biases, weights):
