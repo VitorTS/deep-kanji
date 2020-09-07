@@ -26,9 +26,9 @@ training_data, test_data = data_loader.load_data_wrapper()
 
 inputSize = len(training_data[0][0])
 layerSizes = [inputSize, 15, 10];
-learningRate = 0.1
+learningRate = 0.2
 batch_size = 30
-epochs = 10
+epochs = 40
 
 biases = [np.random.normal(0.0, 1.0, (row, 1)) for row in layerSizes[1:]]
 #dd(biases)
